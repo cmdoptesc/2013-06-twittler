@@ -3,25 +3,81 @@
   <head>
     <script src="jquery.js"></script>
     <script src="data_generator.js"></script>
+    <script src="moment.min.js"></script>
   </head>
   <body>
     <script>
 
       $(document).ready(function(){
-        var $body = $('body');
-        $body.html('');
+        var $tweetArea = $('#tweetsGoHere');
+        $tweetArea.html('');
 
-        var index = streams.home.length - 1;
-        while(index >= 0){
-          var tweet = streams.home[index];
-          var $tweet = $('<div></div>');
-          $tweet.text('@' + tweet.user + ': ' + tweet.message);
-          $tweet.appendTo($body);
-          index -= 1;
+        var lastIndex = 0;
+
+        var printTweet = function(tweet) {
+          var $tweet = $('<div class="cssTweet"></div>');
+
+          strUser = new String('<a href="?' + tweet.user + '" class="cssUser">@' + tweet.user + '</a>');
+          $tweet.append(strUser + ': ');
+
+          strMsg = '<span class="cssMsg">' + tweet.message + '</span>';
+          strDate = '<span class="cssDate">' + tweet.created_at + '</span>';
+
+          $tweet.append(strMsg + ' ' + strDate);
+
+          // $tweet.appendTo($tweetArea);
+          $tweetArea.prepend($tweet);
         }
+
+        var getTweets = function(tweetStream, tweetIndex) {
+          var i = tweetIndex ? tweetIndex : 0;
+          var len = tweetStream.length;
+
+          while(i<len) {
+            var tweet = dasStream[i];
+            printTweet(tweet);
+            i++;
+          }
+        }
+
+        var checkTweets = function(userName) {
+          dasStream = streams.users[userName] ? streams.users[userName] : streams.home;
+
+          var currentIndex = dasStream.length-1;
+
+          if(lastIndex<currentIndex) {
+            getTweets(dasStream,lastIndex+1);
+
+            lastIndex = currentIndex;
+          }
+          else {
+            console.log("No new tweets found as of " + Date())
+          }
+        }
+
+        // var formatDates = function() {
+        //   var $pageDates = $(".cssDate");
+
+        //   $pageDates.each(function(v) {
+        //     var niceDate = $(this).text()
+        //   });
+
+        //   $pageDates.text();
+        // }
+
+        var refreshPage = function() {
+          var possibleUser = window.location.search.substr(1);
+          checkTweets(possibleUser);
+
+          // formatDates();
+        }
+        
+        refreshPage();
+        setInterval(refreshPage,3000);
 
       });
 
     </script>
+    <div id="tweetsGoHere"></div>
   </body>
 </html>
